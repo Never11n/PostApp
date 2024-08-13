@@ -1,10 +1,10 @@
-from jwt import JWT, jwk_from_pem
-from jwt.utils import get_int_from_datetime
+import jwt
 import datetime
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.db import models
+from django.conf import settings
 
 
 class User(AbstractBaseUser):
@@ -12,6 +12,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
     is_active = models.IntegerField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
 
@@ -25,14 +26,11 @@ class User(AbstractBaseUser):
         return self._generate_jwt_token()
 
     def _generate_jwt_token(self):
-        jwt_instance = JWT()
-        with open('rsa_private_key.pem', 'rb') as fh:
-            signing_key = jwk_from_pem(fh.read())
         datetime_tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
         message = {'id': self.pk,
-                   'exp': get_int_from_datetime(datetime_tomorrow)
+                   'exp': datetime_tomorrow
                    }
-        token = jwt_instance.encode(payload=message, key=signing_key, alg='HS256')
+        token = jwt.encode(message, settings.SECRET_KEY, algorithm='HS256')
         return token
 
 
@@ -48,4 +46,5 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey('User', on_delete=models.CASCADE, related_name="comments")
+    blocked = models.BooleanField(default=False)
