@@ -1,1 +1,1 @@
-from .auth_api import GlobalAuth
+from .post_api import Posts

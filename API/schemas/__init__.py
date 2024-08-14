@@ -1,0 +1,1 @@
+from .post_schemas import PostIn, PostOut
