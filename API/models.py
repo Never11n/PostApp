@@ -1,6 +1,7 @@
 import jwt
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager, PermissionsMixin
 from django.conf import settings
@@ -39,7 +40,10 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(max_length=1500)
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey('User', on_delete=models.CASCADE, related_name='posts')
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='posts')
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
@@ -55,7 +59,14 @@ class Post(models.Model):
 class Comment(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
     content = models.TextField(max_length=1000)
-    author = models.ForeignKey('User', on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="comments")
     blocked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.author.username}- {self.content[:50]}"
 

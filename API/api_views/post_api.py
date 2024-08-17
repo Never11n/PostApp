@@ -3,10 +3,10 @@ from datetime import datetime
 from ninja import Router, Form
 
 from django.http import JsonResponse
-from django.core.exceptions import PermissionDenied
+from django.db.models import Prefetch, Count
 
-from ..models import Post
-from ..schemas import PostIn, PostOut
+from ..models import Post, Comment
+from ..schemas import PostIn, PostOut, CommentOut
 
 router = Router()
 
@@ -31,3 +31,15 @@ def create_post(request, data: Form[PostIn]):
         }
     except ValueError:
         return JsonResponse({'access': False, 'message': 'Invalid data'}, status=400)
+
+
+@router.get('/')
+def get_posts(request) -> list[PostOut]:
+    filtered_comments = Comment.objects.filter(blocked=False)
+    posts = Post.objects.prefetch_related(
+        Prefetch('comments', queryset=filtered_comments),
+        'comments__replies').all()
+    posts_count = {'post_count': posts.count()}
+    formatted_posts = [PostOut.from_orm(post) for post in posts]
+    formatted_posts.insert(0, posts_count)
+    return formatted_posts

@@ -1,6 +1,9 @@
 from datetime import datetime
 
 from ninja import Schema
+from typing import List
+
+from .user_schema import UserOut
 
 
 class CommentIn(Schema):
@@ -9,7 +12,11 @@ class CommentIn(Schema):
 
 class CommentOut(Schema):
     id: int
-    author: str
+    author: UserOut
     content: str
     created_at: datetime
     blocked: bool
+    replies: List['CommentOut'] = []
+
+    class Config:
+        from_attributes = True
