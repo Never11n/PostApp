@@ -13,6 +13,7 @@ class User(PermissionsMixin, AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    enabled_auto_answer = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'username'
 
@@ -53,5 +54,8 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField(max_length=1000)
     author = models.ForeignKey('User', on_delete=models.CASCADE, related_name="comments")
     blocked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
