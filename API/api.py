@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 
 from .models import User
-from .api_views.post_api import router as post_router
+from .api_views import posts_router, comments_router, user_router
 from .api_views.comments_api import router as comment_router
 from secrets import compare_digest
 
@@ -21,8 +21,9 @@ class GlobalAuth(HttpBearer):
 
 api = NinjaAPI(auth=GlobalAuth())
 
-api.add_router('/posts', post_router)
-api.add_router('/comments', comment_router)
+api.add_router('/posts', posts_router)
+api.add_router('/comments', comments_router)
+api.add_router('/auto_answer', user_router)
 
 
 @api.post("/register", auth=None)
