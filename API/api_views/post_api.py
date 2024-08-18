@@ -35,7 +35,7 @@ def create_post(request, data: Form[PostIn]):
 
 @router.get('/')
 def get_posts(request) -> list[PostOut]:
-    filtered_comments = Comment.objects.filter(blocked=False)
+    filtered_comments = Comment.objects.filter(blocked=False, parent=None)
     posts = Post.objects.prefetch_related(
         Prefetch('comments', queryset=filtered_comments),
         'comments__replies').all()
