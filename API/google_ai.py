@@ -1,5 +1,3 @@
-import json
-
 import google.generativeai as genai
 
 genai.configure(api_key="AIzaSyCeN2-R6tDr3_2GxLOPHIrG593e0k11t-Q")  # This key might be in .env file
@@ -27,3 +25,11 @@ def send_prompt(text):
     response = chat_session.send_message(text)
     formatted_response = response.to_dict()
     return formatted_response['candidates'][0]['content']['parts'][0]['text']
+
+
+def check_comment(comment):
+    response = send_prompt(
+        f"Return True if text has no obscene language and abusive language.You must send only True or False:{comment}")
+    print(response)
+    blocked = False if 'True' in response else True
+    return blocked

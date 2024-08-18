@@ -1,3 +1,5 @@
+import asyncio
+
 from datetime import datetime
 
 from django.db.models import Count, Q
@@ -9,7 +11,7 @@ from ninja import Router, Form
 
 from ..schemas import CommentIn, CommentOut
 from ..models import Comment, Post
-from ..google_ai import send_prompt
+from ..google_ai import check_comment, send_prompt
 
 router = Router()
 
@@ -18,17 +20,15 @@ router = Router()
 def leave_a_comment(request, post_id: int, data: Form[CommentIn]):
     try:
         content = data.content
-        response = send_prompt(
-            f"Return True if text has no obscene language and abusive language.You must send only True or False:{content}")
-        blocked = False if 'True' in response else True
+        blocked = check_comment(content)
         post = Post.objects.get(id=post_id)
         comment = Comment.objects.create(post=post, **data.dict(), author=request.user, blocked=blocked)
         return {
             'id': comment.id,
-            'author': comment.author.username,
+            'author': comment.author,
             'content': comment.content,
             'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'blocked': comment.blocked
+            'blocked': comment.blocked,
         }
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'Post not found'})
@@ -41,10 +41,7 @@ def reply_to_comment(request, comment_id: int, data: Form[CommentIn]):
     try:
         parent_comment = Comment.objects.get(id=comment_id)
         content = data.content
-        response = send_prompt(
-            f"Return True if text has no obscene language and abusive language.You must send only True or False:{content}")
-        print(response)
-        blocked = False if 'True' in response else True
+        blocked = check_comment(content)
         comment = Comment.objects.create(post=parent_comment.post,
                                          **data.dict(),
                                          author=request.user,
@@ -78,3 +75,4 @@ def comments_daily_breakdown(request, date_from: datetime, date_to: datetime):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)})
+

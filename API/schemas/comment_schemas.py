@@ -16,7 +16,7 @@ class CommentOut(Schema):
     content: str
     created_at: datetime
     blocked: bool
-    parent_id: Optional[int]
+    parent_id: Optional[int] = None
     replies: List['CommentOut'] = []
 
     class Config:

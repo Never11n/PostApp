@@ -24,7 +24,7 @@ def create_post(request, data: Form[PostIn]):
         )
         return {
             'id': post.id,
-            'author': post.author.username,
+            'author': post.author,
             'title': post.title,
             'content': post.content,
             'created_at': post.created_at

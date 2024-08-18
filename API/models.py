@@ -15,6 +15,7 @@ class User(PermissionsMixin, AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     enabled_auto_answer = models.BooleanField(default=True)
+    auto_answer_delay = models.IntegerField(default=1)  # Time in minutes
 
     USERNAME_FIELD = 'username'
 
