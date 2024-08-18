@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  django:
+    container_name: django
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "pytest --ds=PostApp.settings
+      && python manage.py makemigrations
+      && python manage.py makemigrations API
+      && python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+  redis:
+    image: redis:7.0.11-alpine
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  celery:
+    container_name: celery
+    restart: always
+    build:
+      context: .
+    command: celery --app=PostApp worker -l INFO -B
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      redis:
+        condition: service_healthy
+      django:
+        condition: service_started
