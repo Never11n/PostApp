@@ -16,6 +16,10 @@ router = Router()
 @router.post('/create-post/', response=PostOut)
 def create_post(request, data: Form[PostIn]):
     try:
+        print(data.title, data.content)
+        if not data.title or not data.content:
+            print('in')
+            raise ValueError
         author = request.user
         post = Post.objects.create(
             title=data.title,
@@ -29,8 +33,9 @@ def create_post(request, data: Form[PostIn]):
             'content': post.content,
             'created_at': post.created_at
         }
-    except ValueError:
-        return JsonResponse({'access': False, 'message': 'Invalid data'}, status=400)
+    except ValueError as e:
+        print(e)
+        return JsonResponse({'message': 'Invalid data'}, status=403)
 
 
 @router.get('/')

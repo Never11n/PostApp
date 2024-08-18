@@ -19,6 +19,8 @@ router = Router()
 @router.post('/leave-a-comment/{post_id}', response=CommentOut)
 def leave_a_comment(request, post_id: int, data: Form[CommentIn]):
     try:
+        if not data.content:
+            raise ValueError
         content = data.content
         blocked = check_comment(content)
         post = Post.objects.get(id=post_id)
@@ -31,9 +33,11 @@ def leave_a_comment(request, post_id: int, data: Form[CommentIn]):
             'blocked': comment.blocked,
         }
     except ObjectDoesNotExist:
-        return JsonResponse({'error': 'Post not found'})
+        return JsonResponse({'error': 'Post not found'}, status=404)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid data'}, status=403)
     except Exception as e:
-        return JsonResponse({'error': str(e)})
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @router.post('/reply/{comment_id}')
@@ -50,13 +54,12 @@ def reply_to_comment(request, comment_id: int, data: Form[CommentIn]):
         return CommentOut.from_orm(comment)
 
     except ObjectDoesNotExist:
-        return JsonResponse({'error': 'Comment not found'})
+        return JsonResponse({'error': 'Comment not found'}, status=404)
 
 
 @router.get('/daily-breakdown')
 def comments_daily_breakdown(request, date_from: datetime, date_to: datetime):
     try:
-
         date_to = date_to if date_to <= datetime.now() else datetime.now()
         date_to = date_to.replace(hour=23)
         comments_count = Comment.objects.filter(created_at__range=(date_from, date_to)).count()
@@ -72,7 +75,7 @@ def comments_daily_breakdown(request, date_from: datetime, date_to: datetime):
         return JsonResponse({
             'total_comments': comments_count,
             'comments': [comment for comment in comments_by_date]
-        })
+        }, status=200)
     except Exception as e:
-        return JsonResponse({'error': str(e)})
+        return JsonResponse({'error': str(e)}, status=500)
 

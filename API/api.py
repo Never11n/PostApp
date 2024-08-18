@@ -7,7 +7,6 @@ from django.http import JsonResponse
 
 from .models import User
 from .api_views import posts_router, comments_router, user_router
-from .api_views.comments_api import router as comment_router
 from secrets import compare_digest
 
 

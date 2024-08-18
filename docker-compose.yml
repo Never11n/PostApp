@@ -6,7 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bash -c "python manage.py makemigrations
+    command: bash -c "pytest --ds=PostApp.settings
+      && python manage.py makemigrations
       && python manage.py makemigrations API
       && python manage.py migrate
       && python manage.py runserver 0.0.0.0:8000"
