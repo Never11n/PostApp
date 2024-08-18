@@ -35,9 +35,18 @@ def leave_a_comment(request, post_id: int, data: Form[CommentIn]):
 @router.post('/reply/{comment_id}')
 def reply_to_comment(request, comment_id: int, data: Form[CommentIn]):
     try:
-        parrent_comment = Comment.objects.get(id=comment_id)
-
-
+        parent_comment = Comment.objects.get(id=comment_id)
+        content = data.content
+        response = send_prompt(
+            f"Return True if text has no obscene language and abusive language.You must send only True or False:{content}")
+        print(response)
+        blocked = False if 'True' in response else True
+        comment = Comment.objects.create(post=parent_comment.post,
+                                         **data.dict(),
+                                         author=request.user,
+                                         blocked=blocked,
+                                         parent=parent_comment)
+        return CommentOut.from_orm(comment)
 
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'Comment not found'})
