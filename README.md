@@ -16,7 +16,7 @@ https://www.docker.com/products/docker-desktop/
 ```bash
    docker-compose up --build
 ```
-Now, you can get application by
+Now, you can get application via
 ````
 http://127.0.0.1:8000/api/docs
 ````
