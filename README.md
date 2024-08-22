@@ -2,7 +2,7 @@
 This is API for creating posts and comments.
 
 ## Installation
-For building this app you must have Docker
+For building this app you must have Docker \
 link for install
 ````
 https://www.docker.com/products/docker-desktop/
